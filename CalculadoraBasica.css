@@ -1,0 +1,121 @@
+/*(0,0,1)*/
+footer {
+    text-align: center;
+}
+
+/*(0,0,1)*/
+form{
+    display: flex;
+    justify-content: center;
+}
+
+/*(0,0,1)*/
+h1{
+    text-align: center;
+}
+
+/*(0,1,0)*/
+.teclas {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    margin-bottom: 1em;
+}
+
+/*(1,0,0)*/
+#pantalla{
+
+    text-align: right;
+    padding: 0.3em;
+    font-size: 3em;
+    grid-column: span 5;
+    background-color: rgb(193, 204, 212);
+}
+
+/*(1,0,0)*/
+#igual{
+    grid-row-end: span 2;
+    grid-column-end: span 2;
+}
+
+/*(0,1,1)*/
+input[type="submit"]{
+    padding: 2rem;
+    font-size: 1.5em;
+}
+
+/* Por motivos de accesibilidad se provee una label que podrá ser leída por screen readers
+pero que no se muestra visualmente ya que su significado se deriva por contexto */
+.visuallyhidden {
+    border: 0;
+    /*clip: rect(0,0,0,0);*/
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+/************************ COLORES ****************************/
+
+/*(0,1,1)*/
+.digito{
+    color: rgb(49, 67, 80); 
+    background-color: rgb(193, 204, 212);
+}
+
+/*(0,2,1)*/
+.digito:hover{
+    color: rgb(49, 67, 80); 
+    background-color: rgb(169, 178, 185);
+}
+
+/*(1,0,0)*/
+#limpiar{
+    color: rgb(63, 39, 45); 
+    background-color: rgb(175, 133, 139);
+}
+
+/*(1,1,0)*/
+#limpiar:hover {
+    color: rgb(246, 198, 198); 
+    background-color: rgb(139, 85, 89);
+}
+
+/*(1,0,0)*/
+#igual{
+    color: rgb(180, 165, 235); 
+    background-color: rgb(64, 51, 85);
+}
+
+/*(1,1,0)*/
+#igual:hover {
+    color: rgb(246, 198, 198); 
+    background-color: rgb(108, 84, 124);
+}
+
+/*(0,1,1)*/
+.memoria, .operaciones{
+    color:  rgb(193, 204, 212);
+    background-color:rgb(49, 67, 80);
+}
+
+/*(0,2,1)*/
+.memoria:hover, .operaciones:hover  {
+    background-color: rgb(36, 50, 59);
+}
+
+
+/**************************** MEDIA QUERIES ************************/
+@media screen and (max-width: 600px) {
+
+    /*(1,0,0)*/
+    #pantalla{
+        text-align: center;
+    }
+    /*(0,1,0)*/
+    .teclas{
+        width: 100%;
+    }
+
+}
