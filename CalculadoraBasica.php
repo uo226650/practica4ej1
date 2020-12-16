@@ -10,194 +10,145 @@
 	
     <main>
         <h1>Calculadora Básica</h1>
+        
         <?php
-
+        
         session_start();
 
         /**
          * Definición de la clase CalculadoraBasica
+         * 
+         * Los ceros a la izquierda de un 8 o 9 provocan un error debido a la base numérica Octal
+         * que reconoce PHP desde su versión 7.x
          */
         class CalculadoraBasica{
 
-            private $resultado       = "";
-            private $pulsado         = "";
+            public function __construct(){
 
-            public function evaluar(){
-                try{
-                    $expresion = $_SESSION['expresion'];
-                    $this->resultado = eval("return $expresion ;");
-                    $_SESSION['expresion'] = $this->getResultado();
-                } catch (Throwable $e) {
-                    $this->setResultado("Error: " .$e->getMessage());
-                }    
+                if( !isset( $_SESSION['calculadora'] ) ) {
+                    $this->pantalla = "";
+                    $this->memoria = "";
+                    $_SESSION['calculadora']= $this;
+                } else {
+                    $_SESSION['calculadora']->accion();
+                }
+
+                               
             }
 
-            public function pulsar($valor){
-                
-                $this->setPulsado($valor);
-                
-                if( isset( $_SESSION['expresion'] ) ) {
-                    $_SESSION['expresion'] .= $valor;
-                }else {
-                    $_SESSION['expresion'] = $valor;
-                }
-                $this->setResultado($_SESSION['expresion']);
+            public function accion(){
+                if (count($_POST)>0){  
+                //Pulsación de dígitos u operaciones
+                if(isset($_POST['digito0'])) $_SESSION['calculadora']->pulsar("0"); 
+                if(isset($_POST['digito1'])) $_SESSION['calculadora']->pulsar("1");
+                if(isset($_POST['digito2'])) $_SESSION['calculadora']->pulsar("2");
+                if(isset($_POST['digito3'])) $_SESSION['calculadora']->pulsar("3");
+                if(isset($_POST['digito4'])) $_SESSION['calculadora']->pulsar("4");
+                if(isset($_POST['digito5'])) $_SESSION['calculadora']->pulsar("5");
+                if(isset($_POST['digito6'])) $_SESSION['calculadora']->pulsar("6");
+                if(isset($_POST['digito7'])) $_SESSION['calculadora']->pulsar("7");
+                if(isset($_POST['digito8'])) $_SESSION['calculadora']->pulsar("8");
+                if(isset($_POST['digito9'])) $_SESSION['calculadora']->pulsar("9");
+                if(isset($_POST['mas'])) $_SESSION['calculadora']->pulsar("+");
+                if(isset($_POST['menos'])) $_SESSION['calculadora']->pulsar("-");
+                if(isset($_POST['por'])) $_SESSION['calculadora']->pulsar("*");
+                if(isset($_POST['entre'])) $_SESSION['calculadora']->pulsar("/");
+                if(isset($_POST['punto'])) $_SESSION['calculadora']->pulsar(".");
+
+                //Cálculo de resultado
+                if(isset($_POST['igual'])) $_SESSION['calculadora']->evaluar();
+                 
+                if(isset($_POST['limpiar'])) $_SESSION['calculadora']->limpiar();
+
+                //Operaciones de memoria
+                if(isset($_POST['ms'])) $_SESSION['calculadora']->guardar();
+                if(isset($_POST['mr'])) $_SESSION['calculadora']->leerMemoria();
+                if(isset($_POST['mc'])) $_SESSION['calculadora']->borrarMemoria();
+                if(isset($_POST['mmas'])) $_SESSION['calculadora']->sumarMemoria();
+                if(isset($_POST['mmenos'])) $_SESSION['calculadora']->restarMemoria();
+            }
+
+            }
+
+            public function pulsar($valor){    
+                $this->pantalla .= $valor;
             }
 
             public function limpiar(){
-                $_SESSION['expresion'] = "";
-                $this->setResultado("");
+                $this->pantalla = "";
             }
 
             public function guardar(){
-                if (is_numeric($_SESSION['expresion'])){
-                    $_SESSION['memoria'] = $_SESSION['expresion'];//$this->getResultado();
-                    $this->setResultado($_SESSION['memoria']);
-                    echo "Se guardó: " .$_SESSION['memoria']; //DEBUG BORRAR
-                }
-                   
-                else{
-                    $this->setResultado("Operación no permitida");
-                    $_SESSION['expresion'] = "";
-                    echo "No se guardó nada"; //DEBUG BORRAR
+                if (is_numeric($this->pantalla)){
+                    $this->memoria = (float)$this->pantalla;
+
+                } else {
+                    $this->pantalla = "Operación no permitida";
                 }  
                 
             }
 
             public function leerMemoria(){
-                if( isset( $_SESSION['memoria'] ) ) {
-                    $this->setResultado($_SESSION['memoria']);
-                    $this->setPulsado($_SESSION['memoria']);
-                    $_SESSION['expresion'] = $_SESSION['memoria'];
-                }else {
-                    $this->setResultado(0);
-                }
+                $this->pantalla = $this->memoria;
             }
 
             public function borrarMemoria(){
-                if( isset( $_SESSION['memoria'] ) ) {
-                    $this->setResultado(0);
-                    $this->setPulsado(0);
-                    $_SESSION['expresion'] = 0;
-                    $_SESSION['memoria'] = 0;
-                }else {
-                    $this->setResultado(0);
-                }
+                $this->memoria = "";
+                $this->pantalla = 0;
             }
 
             public function sumarMemoria(){
-                if( !isset( $_SESSION['memoria'] ) ) {
-                    $_SESSION['memoria'] = 0;  
-                } 
-                if(is_numeric($_SESSION['expresion'])){ //Comprobar si es un number
-                    $suma = $_SESSION['memoria'] + $_SESSION['expresion'];
-                    $this->setResultado($suma);
 
-                    $_SESSION['expresion'] = $suma;
-                    $_SESSION['memoria'] =  $suma;
+                if(is_numeric($this->pantalla)){ //Comprobar si es un number
+                    $suma = $this->memoria + $this->pantalla;
+                    $this->memoria = $suma;
+                    $this->pantalla = $this->memoria;
                 } else {
-                    $this->setResultado("Operación no permitida");
-                    $_SESSION['expresion'] = "";
-                    echo "No se sumó nada"; //DEBUG BORRAR
+                    $this->pantalla = "Operación no permitida";
                 }
                 
             }
 
+            /**
+            * Resta el valor actual de pantalla al valor
+            * almacenador en memoria
+            */
             public function restarMemoria(){
-                if( !isset( $_SESSION['memoria'] ) ) {
-                    $_SESSION['memoria'] = 0;  
-                } 
-                if(is_numeric($_SESSION['expresion'])){ //Comprobar si es un number
-                    $suma = $_SESSION['memoria'] - $_SESSION['expresion'];
-                    $this->setResultado($suma);
 
-                    $_SESSION['expresion'] = $suma;
-                    $_SESSION['memoria'] =  $suma;
+                if(is_numeric($this->pantalla)){ //Comprobar si es un number
+                    $resta = $this->memoria - $this->pantalla;
+                    $this->memoria = $resta;
+                    $this->pantalla = $this->memoria;
                 } else {
-                    $this->setResultado("Operación no permitida");
-                    $_SESSION['expresion'] = "";
-                    echo "No se sumó nada"; //DEBUG BORRAR
+                    $this->pantalla = "Operación no permitida";
                 }
 
             }
-            
-            /*************** GETTERS SETTERS ************************ */
 
-            public function setPulsado($valor){
-                $this->pulsado = $valor;
+            public function evaluar(){
+                try{
+                    $expresion = strval($this->pantalla);
+                    $this->pantalla = eval("return $expresion ;");
+                } catch (Throwable $e) {
+                    $this->pantalla = "Error: " .$e->getMessage();
+                }
             }
 
-            public function getPulsado(){
-                return $this->pulsado;
+            public function getPantalla(){
+                return $this->pantalla;
             }
-
-            
-            public function getResultado(){
-                return $this->resultado;
-            }
-
-            public function setResultado($resultado){
-                $this->resultado = $resultado;
-            }
-
-
-            /*************** (end) GETTERS SETTERS ************************ */
-
-
         }
-        
+
         $calculadora = new CalculadoraBasica();
-        //var_dump($calculadora); DEGUB
-        //echo $calculadora->getResultado(); DEBUG
-        //$calculadora->evaluar();
-
         
-        
-        //Solo se ejecutará si se han enviado los datos desde el formulario al pulsar el boton Calcular
-        if (count($_POST)>0) 
-            {  
-                //Pulsación de dígitos u operaciones
-                if(isset($_POST['digito0'])) $calculadora->pulsar("0"); 
-                if(isset($_POST['digito1'])) $calculadora->pulsar("1");
-                if(isset($_POST['digito2'])) $calculadora->pulsar("2");
-                if(isset($_POST['digito3'])) $calculadora->pulsar("3");
-                if(isset($_POST['digito4'])) $calculadora->pulsar("4");
-                if(isset($_POST['digito5'])) $calculadora->pulsar("5");
-                if(isset($_POST['digito6'])) $calculadora->pulsar("6");
-                if(isset($_POST['digito7'])) $calculadora->pulsar("7");
-                if(isset($_POST['digito8'])) $calculadora->pulsar("8");
-                if(isset($_POST['digito9'])) $calculadora->pulsar("9");
-                if(isset($_POST['mas'])) $calculadora->pulsar("+");
-                if(isset($_POST['menos'])) $calculadora->pulsar("-");
-                if(isset($_POST['por'])) $calculadora->pulsar("*");
-                if(isset($_POST['entre'])) $calculadora->pulsar("/");
-                if(isset($_POST['punto'])) $calculadora->pulsar(".");
-                
-                //Cálculo de resultado
-                if(isset($_POST['igual'])) $calculadora->evaluar();
-                 
-                if(isset($_POST['limpiar'])) $calculadora->limpiar();
-
-                //Operaciones de memoria
-                if(isset($_POST['ms'])) $calculadora->guardar();
-                if(isset($_POST['mr'])) $calculadora->leerMemoria();
-                if(isset($_POST['mc'])) $calculadora->borrarMemoria();
-                if(isset($_POST['mmas'])) $calculadora->sumarMemoria();
-                if(isset($_POST['mmenos'])) $calculadora->restarMemoria();
-                
-               
-                
-  
-            }
-        
-        // Interfaz con el usuario. En el interior de comillas dobles se deen usar comillas simples
-        echo "
-                <form action='#' method='post' name='calculadora'>
+    
+    ?>
+    <form action='#' method='post' name='calculadora'>
                         <label for='pantalla' class='visuallyhidden'>Pantalla:</label>
                         <div class='teclas'>
-                            
-                            <input type='text' id='pantalla' name='expresion' value='{$calculadora->getResultado()}' readonly/>
-
+                        <?php
+                            echo "
+                        <input type='text' id='pantalla' name='expresion' value='{$_SESSION['calculadora']->getPantalla()}' readonly/>";?>
                             <input type = 'submit' class='memoria' name = 'mmenos' value = 'M-'/>
                             <input type = 'submit' class='memoria' name = 'mmas' value = 'M+'/>
                             <input type = 'submit' class='memoria' name = 'mr' value = 'MR'/>
@@ -228,9 +179,7 @@
                             <input type = 'submit' class='digito' name = 'digito0' value = '0'/>
                             <input type = 'submit' class='digito' name = 'punto' value = '.'/>
                         </div>
-                </form>
-            ";
-        ?>
+                </form>                                                       
     </main>    
     <footer>
         <a href="https://validator.w3.org/check/referer" hreflang="en-us">
